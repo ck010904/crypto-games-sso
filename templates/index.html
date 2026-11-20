@@ -1,0 +1,322 @@
+{% set is_omok = site_id == 'a' %}
+{% set game = '오목' if is_omok else '바둑' %}
+{% set other_game = '바둑' if is_omok else '오목' %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ game }} 공식 홈페이지</title>
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}">
+  <script defer
+          src="{{ url_for('static', filename='main.js') }}"></script>
+</head>
+<body class="{{ 'omok' if is_omok else 'baduk' }}">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="logo" href="{{ url_for('index') }}"
+         aria-label="{{ game }} 홈">
+        <span class="logo-stones" aria-hidden="true">
+          <i></i><i></i>
+        </span>
+        <span>{{ game }}</span>
+      </a>
+
+      <nav class="main-nav" aria-label="주 메뉴">
+        <button type="button" data-dialog="intro-dialog">게임 소개</button>
+        <a href="#news">새소식</a>
+        <a href="#events">이벤트</a>
+        <button type="button" data-dialog="support-dialog">고객지원</button>
+      </nav>
+
+      <div class="header-account">
+        <details class="game-switch">
+          <summary>다른 게임 <span aria-hidden="true">▾</span></summary>
+          <div class="game-switch-menu">
+            <a href="{{ site.other_url }}">{{ other_game }} 홈페이지 ↗</a>
+          </div>
+        </details>
+
+        {% if user %}
+          <span class="user-name">
+            <span class="login-dot" aria-hidden="true"></span>
+            <strong>{{ user.name }}</strong>님
+          </span>
+          <a class="profile-link" href="{{ url_for('profile') }}">마이페이지</a>
+          <form class="logout-form" method="post"
+                action="{{ url_for('logout') }}">
+            <input type="hidden" name="csrf_token"
+                   value="{{ logout_csrf }}">
+            <button class="logout-button" type="submit">로그아웃</button>
+          </form>
+        {% else %}
+          <a class="login-button" href="{{ url_for('login') }}">로그인</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-art" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <p class="eyebrow">{{ 'GOMOKU' if is_omok else 'BADUK' }}</p>
+
+        {% if is_omok %}
+          <h1 id="hero-title">다섯 수로<br>완성하는 승부</h1>
+          <p class="hero-description">
+            단순한 규칙, 끝없는 수 싸움.<br>
+            당신의 다음 한 수를 만나보세요.
+          </p>
+        {% else %}
+          <h1 id="hero-title">한 수에 담긴<br>깊이</h1>
+          <p class="hero-description">
+            흑과 백으로 펼치는 나만의 세계.<br>
+            생각의 깊이가 다른 바둑을 만나보세요.
+          </p>
+        {% endif %}
+
+        <button class="download-button" type="button"
+                data-dialog="download-dialog">
+          <svg width="22" height="22" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               aria-hidden="true">
+            <path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>
+          </svg>
+          게임 다운로드
+        </button>
+
+        <button class="hero-more" type="button" data-dialog="intro-dialog">
+          게임 소개 <span aria-hidden="true">›</span>
+        </button>
+      </div>
+    </section>
+
+    <div class="content-grid">
+      <section class="news-section" id="news" aria-labelledby="news-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-label">LATEST NEWS</p>
+            <h2 id="news-title">새소식</h2>
+          </div>
+        </div>
+
+        <div class="news-tabs" role="tablist" aria-label="새소식 분류">
+          <button id="notice-tab" class="news-tab active" type="button"
+                  role="tab" aria-selected="true"
+                  aria-controls="notice-panel" data-tab="notice-panel">
+            공지사항
+          </button>
+          <button id="update-tab" class="news-tab" type="button"
+                  role="tab" aria-selected="false" tabindex="-1"
+                  aria-controls="update-panel" data-tab="update-panel">
+            업데이트
+          </button>
+        </div>
+
+        <div id="notice-panel" role="tabpanel" aria-labelledby="notice-tab">
+          <button class="news-item" type="button" data-dialog="guide-dialog">
+            <span class="news-category">안내</span>
+            <span class="news-title">{{ game }} 대국 이용 안내</span>
+            <time datetime="2026-11-19">2026.11.19</time>
+          </button>
+          <button class="news-item" type="button" data-dialog="report-dialog">
+            <span class="news-category">안내</span>
+            <span class="news-title">비정상 플레이 신고 안내</span>
+            <time datetime="2026-11-18">2026.11.18</time>
+          </button>
+        </div>
+
+        <div id="update-panel" role="tabpanel"
+             aria-labelledby="update-tab" hidden>
+          <button class="news-item" type="button" data-dialog="update-dialog">
+            <span class="news-category">개선</span>
+            <span class="news-title">
+              {{ '대국 기록 화면 개선' if is_omok else '기보 복기 기능 개선' }}
+            </span>
+            <time datetime="2026-11-19">2026.11.19</time>
+          </button>
+        </div>
+      </section>
+
+      <section class="events-section" id="events"
+               aria-labelledby="events-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-label">SPECIAL EVENTS</p>
+            <h2 id="events-title">이벤트</h2>
+          </div>
+          <span class="event-status">진행 중</span>
+        </div>
+
+        <div class="event-cards">
+          <button class="event-card event-primary" type="button"
+                  data-dialog="event-one-dialog">
+            <span class="event-tag">CHALLENGE</span>
+            <h3>{{ '오늘의 3승 도전' if is_omok else '매일 한 문제, 사활 도전' }}</h3>
+            <p>
+              {{ '세 번의 승리로 완성하는 하루' if is_omok
+                 else '하루 한 문제로 깊어지는 수 읽기' }}
+            </p>
+            <span class="event-art" aria-hidden="true">
+              <span class="mini-board">
+                <i class="stone stone-one"></i>
+                <i class="stone stone-two"></i>
+                <i class="stone stone-three"></i>
+              </span>
+            </span>
+            <span class="event-bottom">
+              자세히 보기 <span class="circle-arrow" aria-hidden="true">↗</span>
+            </span>
+          </button>
+
+          <button class="event-card event-secondary" type="button"
+                  data-dialog="event-two-dialog">
+            <span class="event-tag">SPECIAL GIFT</span>
+            <h3>{{ '친구와 한 판!' if is_omok else '첫 대국을 응원합니다' }}</h3>
+            <p>
+              {{ '함께하는 즐거움, 특별한 선물' if is_omok
+                 else '새로운 시작을 위한 작은 선물' }}
+            </p>
+            <span class="gift-art" aria-hidden="true">
+              <span class="gift-box"></span>
+              <span class="gift-lid"></span>
+              <span class="gift-ribbon"></span>
+            </span>
+            <span class="event-bottom">
+              자세히 보기 <span class="circle-arrow" aria-hidden="true">↗</span>
+            </span>
+          </button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <span class="footer-brand">{{ game }}</span>
+    <span>한 계정으로 만나는 오목과 바둑</span>
+    <button type="button" data-dialog="support-dialog">이용 안내</button>
+  </footer>
+
+  <dialog id="download-dialog" class="site-dialog compact-dialog"
+          aria-labelledby="download-title">
+    <div class="dialog-body">
+      <span class="dialog-symbol" aria-hidden="true">↓</span>
+      <h2 id="download-title">게임이 다운로드 중입니다.</h2>
+      <form method="dialog">
+        <button class="confirm-button">확인</button>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog id="intro-dialog" class="site-dialog" aria-labelledby="intro-title">
+    <div class="dialog-body">
+      <p class="section-label">ABOUT THE GAME</p>
+      <h2 id="intro-title">{{ game }} 소개</h2>
+      {% if is_omok %}
+        <p>흑과 백이 번갈아 돌을 놓으며 다섯 돌을 잇는 수를 겨루는 게임입니다.</p>
+        <p>상대의 다음 수를 읽고, 자신만의 전략을 만들어 보세요.</p>
+      {% else %}
+        <p>흑과 백이 번갈아 돌을 놓으며 집을 둘러싸고 승부를 겨루는 게임입니다.</p>
+        <p>한 수의 선택이 전체 흐름을 바꾸는 바둑의 깊이를 만나보세요.</p>
+      {% endif %}
+      <form method="dialog"><button class="confirm-button">확인</button></form>
+    </div>
+  </dialog>
+
+  <dialog id="guide-dialog" class="site-dialog" aria-labelledby="guide-title">
+    <div class="dialog-body">
+      <p class="section-label">NOTICE · 2026.11.19</p>
+      <h2 id="guide-title">{{ game }} 대국 이용 안내</h2>
+      <p>서로를 존중하는 대국 문화를 함께 만들어 주세요.</p>
+      <ul>
+        <li>대국 전 적용 규칙과 제한시간을 확인해 주세요.</li>
+        <li>상대방을 비방하거나 불쾌하게 만드는 표현을 삼가 주세요.</li>
+        <li>공정한 승부를 위해 외부 보조 프로그램을 사용하지 마세요.</li>
+      </ul>
+      <form method="dialog"><button class="confirm-button">확인</button></form>
+    </div>
+  </dialog>
+
+  <dialog id="report-dialog" class="site-dialog" aria-labelledby="report-title">
+    <div class="dialog-body">
+      <p class="section-label">NOTICE · 2026.11.18</p>
+      <h2 id="report-title">비정상 플레이 신고 안내</h2>
+      <p>비정상 플레이가 의심되는 경우 아래 정보를 기록해 주세요.</p>
+      <ul>
+        <li>상대 닉네임과 대국 일시</li>
+        <li>문제가 발생한 상황에 대한 설명</li>
+        <li>관련 화면 캡처 또는 대국 기록</li>
+      </ul>
+      <p class="dialog-note">현재 실습용 사이트에서는 실제 신고를 접수하지 않습니다.</p>
+      <form method="dialog"><button class="confirm-button">확인</button></form>
+    </div>
+  </dialog>
+
+  <dialog id="update-dialog" class="site-dialog" aria-labelledby="update-title">
+    <div class="dialog-body">
+      <p class="section-label">UPDATE · 2026.11.19</p>
+      <h2 id="update-title">
+        {{ '대국 기록 화면 개선' if is_omok else '기보 복기 기능 개선' }}
+      </h2>
+      {% if is_omok %}
+        <p>최근 대국의 승패와 진행 기록을 한눈에 확인할 수 있도록 화면을 개선했습니다.</p>
+      {% else %}
+        <p>수순을 앞뒤로 이동하고 주요 장면을 다시 확인할 수 있도록 복기 화면을 개선했습니다.</p>
+      {% endif %}
+      <p class="dialog-note">홈페이지 시연을 위한 예시 업데이트입니다.</p>
+      <form method="dialog"><button class="confirm-button">확인</button></form>
+    </div>
+  </dialog>
+
+  <dialog id="event-one-dialog" class="site-dialog"
+          aria-labelledby="event-one-title">
+    <div class="dialog-body">
+      <p class="section-label">CHALLENGE EVENT</p>
+      <h2 id="event-one-title">
+        {{ '오늘의 3승 도전' if is_omok else '매일 한 문제, 사활 도전' }}
+      </h2>
+      {% if is_omok %}
+        <p>하루 3승을 달성하고 특별한 프로필 테두리를 만나보세요.</p>
+      {% else %}
+        <p>매일 새로운 사활 문제에 도전하고 참여 포인트를 모아보세요.</p>
+      {% endif %}
+      <p class="dialog-note">시연용 이벤트이며 실제 대국 집계나 보상 지급은 진행하지 않습니다.</p>
+      <form method="dialog"><button class="confirm-button">확인</button></form>
+    </div>
+  </dialog>
+
+  <dialog id="event-two-dialog" class="site-dialog"
+          aria-labelledby="event-two-title">
+    <div class="dialog-body">
+      <p class="section-label">SPECIAL GIFT EVENT</p>
+      <h2 id="event-two-title">
+        {{ '친구와 한 판!' if is_omok else '첫 대국을 응원합니다' }}
+      </h2>
+      {% if is_omok %}
+        <p>친구를 초대하고 함께 대국을 즐기면 특별한 바둑돌 스킨을 드립니다.</p>
+      {% else %}
+        <p>첫 대국을 마친 신규 이용자에게 새로운 바둑판 테마를 드립니다.</p>
+      {% endif %}
+      <p class="dialog-note">시연용 이벤트이며 실제 대국 집계나 보상 지급은 진행하지 않습니다.</p>
+      <form method="dialog"><button class="confirm-button">확인</button></form>
+    </div>
+  </dialog>
+
+  <dialog id="support-dialog" class="site-dialog"
+          aria-labelledby="support-title">
+    <div class="dialog-body">
+      <p class="section-label">SUPPORT</p>
+      <h2 id="support-title">이용 안내</h2>
+      <p>오목과 바둑 홈페이지는 하나의 통합 계정으로 이용할 수 있습니다.</p>
+      <p>다른 게임으로 이동한 뒤 로그인을 누르면 기존 인증 상태를 확인합니다.</p>
+      <p class="dialog-note">
+        이 사이트는 대학 과제용 게임 홈페이지입니다.
+        게임 다운로드는 안내창만 표시하는 모의 기능입니다.
+      </p>
+      <form method="dialog"><button class="confirm-button">확인</button></form>
+    </div>
+  </dialog>
+</body>
+</html>

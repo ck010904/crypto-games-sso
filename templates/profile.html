@@ -1,0 +1,217 @@
+{% set is_omok = site_id == 'a' %}
+{% set game = '오목' if is_omok else '바둑' %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>마이페이지 | {{ game }}</title>
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .profile-layout {
+      max-width: 720px;
+      margin: 60px auto;
+      padding: 0 24px;
+    }
+    .profile-heading h1 {
+      margin: 10px 0;
+      color: var(--accent-dark);
+      font-size: 32px;
+    }
+    .profile-heading > p:last-child {
+      color: var(--muted);
+      line-height: 1.8;
+    }
+    .profile-card {
+      margin-top: 28px;
+      padding: 36px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+    .account-info {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 24px;
+      margin-bottom: 28px;
+      border-bottom: 1px solid var(--line);
+    }
+    .account-info span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .account-info strong {
+      overflow-wrap: anywhere;
+    }
+    .profile-card label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 15px;
+      font-weight: bold;
+    }
+    .profile-card input[type="tel"],
+    .profile-card input[type="email"],
+    .profile-card input[type="date"] {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #aeb6af;
+      border-radius: 7px;
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+    }
+    .profile-card input:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .profile-field {
+      margin-top: 24px;
+    }
+    .field-help {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.8;
+    }
+    .profile-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 16px;
+      align-items: center;
+      margin-top: 30px;
+    }
+    .profile-actions a {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .profile-message {
+      margin-bottom: 24px;
+      padding: 14px 16px;
+      border-radius: 7px;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .profile-success {
+      color: #235035;
+      background: #eaf4ec;
+    }
+    .profile-error {
+      color: #922f2f;
+      background: #fff0ee;
+    }
+    .privacy-info {
+      margin-top: 24px;
+      padding: 20px 24px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+    .privacy-info h2 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+    .privacy-info p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.9;
+    }
+    @media (max-width: 600px) {
+      .profile-layout {
+        margin-top: 32px;
+        padding: 0 18px;
+      }
+      .profile-card {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body class="{{ 'omok' if is_omok else 'baduk' }}">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="logo" href="{{ url_for('index') }}">
+        <span class="logo-stones" aria-hidden="true"><i></i><i></i></span>
+        <span>{{ game }}</span>
+      </a>
+
+      <div class="header-account">
+        <a href="{{ url_for('index') }}">홈으로</a>
+        <span class="user-name">
+          <span class="login-dot" aria-hidden="true"></span>
+          <strong>{{ user.name }}</strong>님
+        </span>
+        <form class="logout-form" method="post"
+              action="{{ url_for('logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ logout_csrf }}">
+          <button class="logout-button" type="submit">로그아웃</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <main class="profile-layout">
+    <div class="profile-heading">
+      <p class="section-label">MY ACCOUNT</p>
+      <h1>마이페이지</h1>
+      <p>오목과 바둑에서 함께 사용하는 내 계정 정보를 관리하세요.</p>
+    </div>
+
+    <section class="profile-card" aria-label="개인정보 관리">
+      {% if saved %}
+        <div class="profile-message profile-success" role="status">
+          개인정보가 저장되었습니다.
+        </div>
+      {% endif %}
+
+      {% if error %}
+        <div id="phone-error"
+             class="profile-message profile-error" role="alert">
+          {{ error }}
+        </div>
+      {% endif %}
+
+
+
+      <form method="post" action="{{ url_for('profile') }}">
+        <input type="hidden" name="csrf_token" value="{{ profile_csrf }}">
+
+        <label for="phone">연락처</label>
+        <input id="phone" name="phone" type="tel"
+               value="{{ phone }}" maxlength="30"
+               placeholder="연락처를 입력하세요"
+               autocomplete="off" required
+               {% if error %}aria-describedby="phone-error"{% endif %}>
+
+        <div class="profile-field">
+          <label for="email">이메일</label>
+          <input id="email" name="email" type="email"
+                 value="{{ email }}" maxlength="254"
+                 placeholder="이메일을 입력하세요"
+                 autocomplete="off" required>
+        </div>
+
+        <div class="profile-field">
+          <label for="birthdate">생년월일</label>
+          <input id="birthdate" name="birthdate" type="date"
+                 value="{{ birthdate }}" autocomplete="off" required>
+        </div>
+
+        <div class="profile-actions">
+          <a href="{{ url_for('index') }}">홈으로 돌아가기</a>
+          <button class="confirm-button" type="submit">저장하기</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="privacy-info">
+      <h2>개인정보 보호 안내</h2>
+      <p>
+        개인정보는 암호화하여 저장됩니다.
+        등록한 정보는 오목과 바둑에서 함께 사용하며, 본인만 조회하고 수정할 수 있습니다.
+      </p>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,28 @@
+.env
+.venv/
+__pycache__/
+instance/
+*.db
+
+# 비밀 설정과 저장 데이터
+.env
+.env.*
+!.env.example
+instance/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+
+# 실행 환경
+.venv/
+__pycache__/
+*.pyc
+
+# 수정 전 백업
+*_before_*.py
+templates/*_before_*.html
+templates/*_backup.html
+
+# Windows 다운로드 부가정보
+*:Zone.Identifier
